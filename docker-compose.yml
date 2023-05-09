@@ -1,0 +1,61 @@
+services:
+  database:
+    image: mysql:latest
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DBNAME}
+    ports:
+      - 3307:3306
+    networks:
+      - online-course-networks
+
+      
+  backend-api:
+    image: rfauzi/online-course:latest
+    depends_on:
+      - database
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    env_file:
+      - .env
+    networks:
+      - online-course-networks
+
+networks:
+  online-course-networks:
+    driver: bridge
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
