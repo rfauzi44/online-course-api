@@ -9,7 +9,7 @@ import (
 	"github.com/rfauzi44/online-course-api/libs"
 )
 
-func AuthMiddleware(roles ...string) echo.MiddlewareFunc {
+func Role(roles ...string) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			authHeader := c.Request().Header.Get("Authorization")
@@ -18,11 +18,12 @@ func AuthMiddleware(roles ...string) echo.MiddlewareFunc {
 			}
 			tokenString := strings.Replace(authHeader, "Bearer ", "", 1)
 
-			checkedToken, err := libs.CheckToken(tokenString)
+			validatedToken, err := libs.CheckToken(tokenString)
 			if err != nil {
 				return c.JSON(http.StatusUnauthorized, libs.ResError("Token is not valid"))
 			}
-			claims := checkedToken.Claims.(jwt.MapClaims)
+
+			claims := validatedToken.Claims.(jwt.MapClaims)
 
 			role := claims["role"].(string)
 			allowed := false
@@ -37,7 +38,7 @@ func AuthMiddleware(roles ...string) echo.MiddlewareFunc {
 			}
 
 			userID := claims["id"].(string)
-			c.Set("id", userID)
+			c.Set("authID", userID)
 			return next(c)
 		}
 	}

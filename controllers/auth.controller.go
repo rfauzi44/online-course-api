@@ -3,6 +3,7 @@ package controllers
 import (
 	"net/http"
 
+	"github.com/go-playground/validator"
 	"github.com/labstack/echo/v4"
 	"github.com/rfauzi44/online-course-api/libs"
 	"github.com/rfauzi44/online-course-api/models"
@@ -14,25 +15,49 @@ func Register(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, libs.ResError(err.Error()))
 	}
-	hashPassword, err := libs.HashPassword(user.Password)
+
+	v := validator.New()
+	err = v.Struct(user)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, libs.ResError(err.Error()))
+	}
+
+	hashPassword, err := libs.HashingPassword(user.Password)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, libs.ResError(err.Error()))
 	}
 
-	data, err := models.Register(user.Email, hashPassword)
+	user.Password = hashPassword
+
+	data, err := models.Register(user)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, libs.ResError(err.Error()))
 	}
 
-	return c.JSON(http.StatusOK, libs.ResSuccess("Registered", data))
+	return c.JSON(http.StatusCreated, libs.ResSuccess("register success", data))
 
 }
 
+type LoginReq struct {
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required,min=6"`
+}
+type LoginRes struct {
+	User  models.User `json:"user"`
+	Token string      `json:"token"`
+}
+
 func Login(c echo.Context) error {
-	var user models.User
+	var user LoginReq
 	err := c.Bind(&user)
 	if err != nil {
 		return err
+	}
+
+	v := validator.New()
+	err = v.Struct(user)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, libs.ResError(err.Error()))
 	}
 
 	data, err := models.Login(user.Email, user.Password)
@@ -45,6 +70,11 @@ func Login(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	return c.JSON(http.StatusOK, libs.ResSuccess("You're login", token))
+	response := LoginRes{
+		User:  *data,
+		Token: token,
+	}
+
+	return c.JSON(http.StatusOK, libs.ResSuccess("login success", response))
 
 }
