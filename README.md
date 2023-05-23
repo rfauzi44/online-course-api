@@ -4,7 +4,7 @@ Online Course API with Echo & MySQL
 
 ## 🔥 Showcase
 
-- [API](https://online-course.zfdlzr.xyz)
+- [API](https://api-online-course.zfdlzr.xyz)
 - [Postman Docs](https://documenter.getpostman.com/view/25042327/2s93ebSVop)
 
 ## 💻 Built with
